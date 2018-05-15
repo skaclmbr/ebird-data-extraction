@@ -114,7 +114,7 @@ def load_cmd_args():
 			sourcefile = arg[dirfilesep:] 
 
 	if len(fn)==0: #no filename passed, use default
-		fn = 'J:\\ebird_data\\ebd_relMay-2015\\ebd_relMay-2015.txt'
+		fn = 'J:\\ebird_data\\ebd_relMay-2017\\ebd_relMay-2017.txt'
 
 	#################################
 	#populate scientific names in parameters
