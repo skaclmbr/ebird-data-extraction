@@ -58,7 +58,7 @@ ncbt_fields = ['TITLE','SITESLUG','LAT','LON','REGION','GROUPSLUG','CATEGORY','G
 #ebird_fields = ['GLOBAL UNIQUE IDENTIFIER','TAXONOMIC ORDER','CATEGORY','COMMON NAME','SCIENTIFIC NAME','SUBSPECIES COMMON NAME','SUBSPECIES SCIENTIFIC NAME','OBSERVATION COUNT','BREEDING BIRD ATLAS CODE','AGE/SEX','COUNTRY','COUNTRY CODE','STATE','STATE CODE','COUNTY','COUNTY CODE','IBA CODE','BCR CODE','LOCALITY','LOCALITY ID',' LOCALITY TYPE','LATITUDE','LONGITUDE','OBSERVATION DATE','TIME OBSERVATIONS STARTED','TRIP COMMENTS','SPECIES COMMENTS','OBSERVER ID','FIRST NAME','LAST NAME','SAMPLING EVENT IDENTIFIER','PROTOCOL TYPE','PROJECT CODE','DURATION MINUTES','EFFORT DISTANCE KM','EFFORT AREA HA','NUMBER OBSERVERS','ALL SPECIES REPORTED','GROUP IDENTIFIER','APPROVED','REVIEWED','REASON']
 
 # these are the basic ERD fields, one colum for each species after
-ebird_fields = ['SAMPLING_EVENT_ID','LOC_ID','LATITUDE','LONGITUDE','YEAR','MONTH','DAY','TIME','COUNTRY','STATE_PROVINCE','COUNTY','COUNT_TYPE','EFFORT_HRS','EFFORT_DISTANCE_KM','EFFORT_AREA_HA','OBSERVER_ID','NUMBER_OBSERVERS','GROUP_ID','PRIMARY_CHECKLIST_FLAG']
+erd_fields = ['SAMPLING_EVENT_ID','LOC_ID','LATITUDE','LONGITUDE','YEAR','MONTH','DAY','TIME','COUNTRY','STATE_PROVINCE','COUNTY','COUNT_TYPE','EFFORT_HRS','EFFORT_DISTANCE_KM','EFFORT_AREA_HA','OBSERVER_ID','NUMBER_OBSERVERS','GROUP_ID','PRIMARY_CHECKLIST_FLAG']
 
 us_states = {'AK':['US-AK','United States','US','Alaska'],'AL':['US-AL','United States','US','Alabama'],'AR':['US-AR','United States','US','Arkansas'],'AZ':['US-AZ','United States','US','Arizona'],'CA':['US-CA','United States','US','California'],'CO':['US-CO','United States','US','Colorado'],'CT':['US-CT','United States','US','Connecticut'],'DC':['US-DC','United States','US','District of Columbia'],'DE':['US-DE','United States','US','Delaware'],'FL':['US-FL','United States','US','Florida'],'GA':['US-GA','United States','US','Georgia'],'HI':['US-HI','United States','US','Hawaii'],'IA':['US-IA','United States','US','Iowa'],'ID':['US-ID','United States','US','Idaho'],'IL':['US-IL','United States','US','Illinois'],'IN':['US-IN','United States','US','Indiana'],'KS':['US-KS','United States','US','Kansas'],'KY':['US-KY','United States','US','Kentucky'],'LA':['US-LA','United States','US','Louisiana'],'MA':['US-MA','United States','US','Massachusetts'],'MD':['US-MD','United States','US','Maryland'],'ME':['US-ME','United States','US','Maine'],'MI':['US-MI','United States','US','Michigan'],'MN':['US-MN','United States','US','Minnesota'],'MO':['US-MO','United States','US','Missouri'],'MS':['US-MS','United States','US','Mississippi'],'MT':['US-MT','United States','US','Montana'],'NC':['US-NC','United States','US','North Carolina'],'ND':['US-ND','United States','US','North Dakota'],'NE':['US-NE','United States','US','Nebraska'],'NH':['US-NH','United States','US','New Hampshire'],'NJ':['US-NJ','United States','US','New Jersey'],'NM':['US-NM','United States','US','New Mexico'],'NV':['US-NV','United States','US','Nevada'],'NY':['US-NY','United States','US','New York'],'OH':['US-OH','United States','US','Ohio'],'OK':['US-OK','United States','US','Oklahoma'],'OR':['US-OR','United States','US','Oregon'],'PA':['US-PA','United States','US','Pennsylvania'],'RI':['US-RI','United States','US','Rhode Island'],'SC':['US-SC','United States','US','South Carolina'],'SD':['US-SD','United States','US','South Dakota'],'TN':['US-TN','United States','US','Tennessee'],'TX':['US-TX','United States','US','Texas'],'UT':['US-UT','United States','US','Utah'],'VA':['US-VA','United States','US','Virginia'],'VT':['US-VT','United States','US','Vermont'],'WA':['US-WA','United States','US','Washington'],'WI':['US-WI','United States','US','Wisconsin'],'WV':['US-WV','United States','US','West Virginia'],'WY':['US-WY','United States','US','Wyoming']}
 us_state_abbr = us_states.iterkeys()
@@ -78,11 +78,14 @@ print '-parameters set'
 def error_text():
 	print nl + '=============================================' + nl + 'please enter variables in the following format:' + nl
 	#print '-years-' + nl + 'yrs=2002 or yrs=2003,2005 or yrs=2003-2010' + nl
-	print '-species-' + nl + 'spp=BACS or yrs=BACS,WOTH,AMRE' + nl
+	print '-species-' + nl + 'spp=BACS or spp=BACS,WOTH,AMRE' + nl
 	print '-state-' + nl + 'st=NC or st=NC,VA,SC'
 	print '-county-' + nl + 'cnty=Wake or cnty=Wake,Durham,Chatham'
 	print '=============================================' + nl + '-execution halted-' + nl
 	sys.exit()
+
+def slugify(t):
+	return t.replace(' ','_')
 
 def load_cmd_args():
 	print nl+'-looping through command line arguments'
@@ -92,7 +95,7 @@ def load_cmd_args():
 	######INPUT DATA HERE#############################
 
 
-	temp_argv = 'C:\\data\\@nc_birding_trail\\ebird\\parse_ebird_records.py ' + erd_file_path + ' st=NC cnty=Wake' #FIX THIS!!!!
+	temp_argv = 'C:\\data\\@nc_birding_trail\\ebird\\parse_ebird_records.py ' + erd_file_path + ' st=NC spp=NC' #FIX THIS!!!!
 	# temp_argv = 'C:\\data\\@nc_birding_trail\\ebird\\parse_ebird_records.py ' + erd_file_path + ' st=NC cnty=Burke,Edgecombe,Lenoir,Madison,Pasquotank,Robeson' #FIX THIS!!!!
 	#temp_argv = 'C:\\data\\@nc_birding_trail\\ebird\\parse_ebird_records.py ' + erd_file_path + ' st=NC' #FIX THIS!!!!
 	# temp_argv = 'C:\\data\\@projects\\eBird_obs\\20150825_parse_ebird_records.py J:\\ebird_data\\ebd_relMay-2015\\ebd_relMay-2015.txt spp=LOSH st=NC'
@@ -130,20 +133,26 @@ def load_cmd_args():
 		fn = erd_file_path #FIX THIS!!!
 
 	#################################
-	#populate scientific names in parameters
+	#check if all species to be collected
 	#ERD - create array of species column #
-	# print nl + '-populating species'
+	print nl + '-year'
+	print str(year)
 
+	#################################
+	#check if all species to be collected
+	print nl + '-populating species'
+
+	print params['spp']
 	if len(params['spp'])==0:
 		params['sppsci'].append('all')
+		params['spp'].append('all')
 		bsppall = True
-	# else:
-	# 	#create array of column #'s for selected species
-	# 	for i in params['spp']:
-	# 		#params['sppsci'].append(bird_codes.lookup_bird(i)['SCINAME']) #EBD
-	# 		params['sppsci'].append(bird_codes.lookup_bird(i)['SCINAME'].replace(' ','_')) #ERD
+	
+	elif params['spp'][0]=='NC':
+		#look for all NC Species
+		params['spp'] = bird_codes.nc_birds
 
-	# print str(params['sppsci'])
+	print str(params['spp'])
 
 	#################################
 	#populate all years in parameters
@@ -196,7 +205,7 @@ def load_cmd_args():
 	#################################
 	#check to see if minimum parameters present
 
-	if bstall and byrsall and bsppall:
+	if bstall and bcntyall and bsppall:
 		print '----------------------------------'+nl+'You must specify at least one criteria to produce results.'+nl+'----------------------------------'
 		error_text()
 
@@ -204,36 +213,110 @@ def load_cmd_args():
 	# 	print 'exception during criteria building'
 	# 	error_text()
 
-def find_bird4(sppsci, spplist):
-	#pass scientific name, list of requested 4-letter codes - cycle through spplist and return matching 4-letter bird code
-	result = ''
-	for n, b in enumerate(spplist): #loop through passed bird4 list
-		if sppsci == bird_codes.lookup_bird(b)['SCINAME']: #check if sciname matches passed value
-			result = b
-	return result
+# def find_bird4(sppsci, spplist):
+# 	#pass scientific name, list of requested 4-letter codes - cycle through spplist and return matching 4-letter bird code
+# 	result = ''
+# 	for n, b in enumerate(spplist): #loop through passed bird4 list
+# 		if sppsci == bird_codes.lookup_bird(b)['SCINAME']: #check if sciname matches passed value
+# 			result = b
+# 	return result
 
- 
+
+# def prep_bird_list(nc=False):
+# 	print nl + '-populating bird lists'
+# 	#routine to go through bird list, re-structure to use for lookups
+# 	global spp4_lookup
+# 	global sciname_slug_lookup
+# 	global spp4_lookup_small
+
+
+# 	sciname_slug_lookup = {}
+# 	spp4_lookup_small = {}
+# 	# bird_library_fields = ['SPP4','COMMONNAME','SCINAME','SCINAME_SLUG', 'NC_SPECIES']
+# 	#bird_library_fields = ['SPEC','COMMONNAME','SCINAME','SPEC6','CONF6','CONF','SP','Sort Order','Order','Family','Subfamily']
+
+# 	for s in bird_library.values():
+# 		if s[0] in nc_birds:
+# 			in_nc = True
+# 		else:
+# 			in_nc = False
+
+# 		temp_fields = [s[0],s[1],s[2],slugify(s[2]),in_nc]
+
+# 		sciname_slug_lookup[temp_fields[3]]=temp_fields
+# 		spp4_lookup_small[temp_fields[0]]=temp_fields
+
+# 		print nl + '=======================' + nl + str(sciname_slug_lookup[temp_fields[3]])
+# 		print str(spp4_lookup_small[temp_fields[0]])
+# 		print str(s)
+
+
+
+# 	# spp4_lookup = bird_codes.bird_library
+
+# 	# if nc:
+# 	# 	spp_loop = nc_birds
+# 	# else:
+# 	# 	spp_loop = spp4_lookup.keys()
+
+# 	# for s in spp_loop:
+# 	# 	try:
+# 	# 		slugscispp = slugify(spp4_lookup[s][2])
+# 	# 		sciname_slug_lookup[slugscispp] = spp4_lookup[s][0:2]
+# 	# 		sciname_slug_lookup[slugscispp].append(False)
+
+# 	# 		spp4_lookup_small[s] = spp4_lookup[s][:2]
+# 	# 		spp4_lookup_small[s].append(slugscispp)
+# 	# 		spp4_lookup_small[s].append(False)
+
+# 	# 		if s in nc_birds:
+# 	# 			sciname_slug_lookup[slugscispp][-1] = True
+# 	# 			spp4_lookup_small[s][-1]=True
+
+
+# 	# 		print str(sciname_slug_lookup[slugscispp])
+# 	# 		print str(spp4_lookup_small[s])
+# 	# 	except:
+# 	# 		pass
+# 	print str(sciname_slug_lookup)
+# 	print str(spp4_lookup_small)
+
+
 def main():
 	load_cmd_args()
 
 	# outname = str(fn_delim.join(params.values()))
 	# print str(params['yrs'])
 	# print str(fn_delim.join(params['yrs']))
-	results_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+params['spp']+params['st']+['erd.csv'])
-	err_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+params['spp']+params['st']+['erd_err_log.csv'])
-	
+	spp_fn = params['spp']
+	if len(params['spp'])>5:
+		spp_fn = ['MultNCSpp']
+
+	results_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+spp_fn+params['st']+['erd.csv'])
+	outspp_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+spp_fn+params['st']+['erd_spp.csv'])
+	outspplookup_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+spp_fn+params['st']+['erd_spp_lookup.csv'])
+	err_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+spp_fn+params['st']+['erd_err_log.csv'])
+
+	cntylist = []	
 
 	# print nl + 'results file:' + results_fn #testing
 	
 
 	out = open(results_fn,'w')
+	outspp = open(outspp_fn,'w')
+	outspplookup = open(outspplookup_fn,'w')
 	err = open(err_fn,'w')
+
+	outspp.write(out_delim.join(['SAMPLING_EVENT_ID','SPP4','COUNT']))
+	outspplookup.write(out_delim.join(['SPP4','SCINAME','COMMNAME','SCINAME_SLUG','NC']))
+
 	# out = open(rootdir + '/results/' + fn_delim.join([rundt]+params['yrs']+params['spp']+params['st']+['ebd.csv']),'w')
 	count = 1
 	recsfound = 0
-	spp_cols = [] #array of columns to watch for non-zero values
+	spp_cols = {} #array of columns to watch for non-zero values
 
 	print nl + '-looping through source file'
+
 	with open(fn) as f:
 	# with open('E:\ebird_data\ebd_relMay-2015\ebd_relMay-2015.txt') as f:
 	# with open('ebird_sample.txt') as f:
@@ -247,17 +330,24 @@ def main():
 
 				##############################################################################
 				#calculate species columns to watch
-				if not bsppall:
+				if bsppall:
+					for x in xrange(len(erd_fields),len(r)):
+					# for n,s in enumerate(r):
+						spp_cols[x] = r[x] #capture all species
+				else:
 					for i in params['spp']:
 
 						#params['sppsci'].append(bird_codes.lookup_bird(i)['SCINAME']) #EBD
-						params['sppsci'].append(bird_codes.lookup_bird(i)['SCINAME'].replace(' ','_')) #ERD formatted scinames
+						bird_info = bird_codes.lookup_spp4(i)
+						if bird_info:
+							params['sppsci'].append(bird_info['SCINAME_SLUG']) #translate 4 letter codes to ERD formatted scinames
 
-						for n,s in enumerate(r):
-							if s in params['sppsci']:
-								spp_cols.append(n)
-
-				out.write(out_delim.join(r))
+							for x in xrange(len(erd_fields),len(r)):
+							# for n,s in enumerate(r[len(erd_fields)]:):
+								if r[x] == bird_info['SCINAME_SLUG']:
+									spp_cols[x] = r[x] #create dict: key=column #, value = sci slug
+				# print str(spp_cols)
+				out.write(out_delim.join(r[:len(erd_fields)])) #add header row to checklist file
 			else:
 				if len(line)>1: #skip blank lines
 
@@ -271,13 +361,18 @@ def main():
 					## EVALUATE YEARS
 					#if int(r[date_col][:4]) in params['yrsall']: byrs = True #EBD
 					#if r[year_col] in params['yrsall']: byrs = True #ERD
+
 					
 					## EVALUATE SPP
-					for i in spp_cols: #loop through spp columns, return true if value >0
-						if int(r[i]) > 0: bspp = True
+					# for i in spp_cols: #loop through spp columns, return true if value >0
+					# 	if int(r[i]) > 0: bspp = True
 
 					## EVALUATE STATE
-					if r[state_col] in params['stall']: bst = True
+					if r[state_col] in params['stall']: 
+						bst = True
+						#######################################################################################
+						#temporary - log county list
+						if r[county_col] not in cntylist:cntylist.append(r[county_col])
 					#print str(byrs)
 
 					## EVALUATE COUNTY
@@ -286,7 +381,18 @@ def main():
 
 					if bst and bspp and bcnty: #years not relevant, already defined
 						#print str(r[county_col])
-						out.write(out_delim.join(r)) #ERD
+						out.write(nl+out_delim.join(r[:len(erd_fields)])) #ERD output of first columns to checklist table (not spp columns)
+						
+						#populate separate table with spp records
+						# print str(r[len(erd_fields):])
+						for s in spp_cols.keys():
+							# print str(n) + ': ' + str(s)
+							print str(s)
+							print spp_cols[s]
+							print r[s]
+							print str(out_delim.join([r[0],spp_cols[s],r[s]]))
+							outspp.write(out_delim.join([r[0],spp_cols[s],r[s]]))
+
 						recsfound +=1
 						#out.write(out_delim.join([find_bird4(r[sciname_col],params['spp'])] + r))
 
@@ -316,8 +422,10 @@ def main():
 			count_prop = float(count) / 10000
 			#print str((count_prop)-int(count_prop)).split('.')
 			if int(str((count_prop)-int(count_prop)).split('.')[1][:10])==0: print '== ' + str(count) + ' records evaluated - ' + str(recsfound) +' found =='
-			#if count>100000: break #for testing
-	print 'search completed. ' + str(count) + ' lines evaluated, ' + str(recsfound) + ' matching records found.'
+			if count>100000: break #for testing
+	print nl + 'counties found: ' + out_delim.join(cntylist)
+	err.write(out_delim.join(cntylist))
+	print nl + 'search completed. ' + str(count) + ' lines evaluated, ' + str(recsfound) + ' matching records found.'
 
 if __name__ == '__main__':
 	main()
