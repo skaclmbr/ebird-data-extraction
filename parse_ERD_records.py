@@ -48,6 +48,7 @@ ebird_rec_ids = []
 bstall = False
 byrsall = False
 bsppall = False
+bsppallnc = False
 bcntyall = False
 
 #eBird EBD Header Fields for reference
@@ -104,6 +105,7 @@ def load_cmd_args():
 	global bstall
 	global byrsall
 	global bsppall
+	global bsppallnc
 	global bcntyall
 	global rootdir
 	global fn
@@ -128,8 +130,7 @@ def load_cmd_args():
 			sourcefile = arg[dirfilesep:] 
 
 	if len(fn)==0: #no filename passed, use default
-		#fn = 'J:\\ebird_data\\ebd_relFeb-2018\\ebd_relFeb-2018.txt'
-		fn = 'E:\\ebird_data\\ebd_relFeb-2018\\ebd_relFeb-2018.txt' #FIX THIS!!!
+		# fn = 'E:\\ebird_data\\ebd_relFeb-2018\\ebd_relFeb-2018.txt' #FIX THIS!!!
 		fn = erd_file_path #FIX THIS!!!
 
 	#################################
@@ -147,12 +148,10 @@ def load_cmd_args():
 		params['sppsci'].append('all')
 		params['spp'].append('all')
 		bsppall = True
-	
-	elif params['spp'][0]=='NC':
+	elif params['spp'][0]=='NC': #if NC species chosen, only select these species
 		#look for all NC Species
+		bspallnc = True
 		params['spp'] = bird_codes.nc_birds
-
-	print str(params['spp'])
 
 	#################################
 	#populate all years in parameters
@@ -202,105 +201,32 @@ def load_cmd_args():
 
 	print str(params['stall'])
 
-	#################################
+	###########################################
 	#check to see if minimum parameters present
 
 	if bstall and bcntyall and bsppall:
 		print '----------------------------------'+nl+'You must specify at least one criteria to produce results.'+nl+'----------------------------------'
 		error_text()
 
-	# except:
-	# 	print 'exception during criteria building'
-	# 	error_text()
-
-# def find_bird4(sppsci, spplist):
-# 	#pass scientific name, list of requested 4-letter codes - cycle through spplist and return matching 4-letter bird code
-# 	result = ''
-# 	for n, b in enumerate(spplist): #loop through passed bird4 list
-# 		if sppsci == bird_codes.lookup_bird(b)['SCINAME']: #check if sciname matches passed value
-# 			result = b
-# 	return result
-
-
-# def prep_bird_list(nc=False):
-# 	print nl + '-populating bird lists'
-# 	#routine to go through bird list, re-structure to use for lookups
-# 	global spp4_lookup
-# 	global sciname_slug_lookup
-# 	global spp4_lookup_small
-
-
-# 	sciname_slug_lookup = {}
-# 	spp4_lookup_small = {}
-# 	# bird_library_fields = ['SPP4','COMMONNAME','SCINAME','SCINAME_SLUG', 'NC_SPECIES']
-# 	#bird_library_fields = ['SPEC','COMMONNAME','SCINAME','SPEC6','CONF6','CONF','SP','Sort Order','Order','Family','Subfamily']
-
-# 	for s in bird_library.values():
-# 		if s[0] in nc_birds:
-# 			in_nc = True
-# 		else:
-# 			in_nc = False
-
-# 		temp_fields = [s[0],s[1],s[2],slugify(s[2]),in_nc]
-
-# 		sciname_slug_lookup[temp_fields[3]]=temp_fields
-# 		spp4_lookup_small[temp_fields[0]]=temp_fields
-
-# 		print nl + '=======================' + nl + str(sciname_slug_lookup[temp_fields[3]])
-# 		print str(spp4_lookup_small[temp_fields[0]])
-# 		print str(s)
-
-
-
-# 	# spp4_lookup = bird_codes.bird_library
-
-# 	# if nc:
-# 	# 	spp_loop = nc_birds
-# 	# else:
-# 	# 	spp_loop = spp4_lookup.keys()
-
-# 	# for s in spp_loop:
-# 	# 	try:
-# 	# 		slugscispp = slugify(spp4_lookup[s][2])
-# 	# 		sciname_slug_lookup[slugscispp] = spp4_lookup[s][0:2]
-# 	# 		sciname_slug_lookup[slugscispp].append(False)
-
-# 	# 		spp4_lookup_small[s] = spp4_lookup[s][:2]
-# 	# 		spp4_lookup_small[s].append(slugscispp)
-# 	# 		spp4_lookup_small[s].append(False)
-
-# 	# 		if s in nc_birds:
-# 	# 			sciname_slug_lookup[slugscispp][-1] = True
-# 	# 			spp4_lookup_small[s][-1]=True
-
-
-# 	# 		print str(sciname_slug_lookup[slugscispp])
-# 	# 		print str(spp4_lookup_small[s])
-# 	# 	except:
-# 	# 		pass
-# 	print str(sciname_slug_lookup)
-# 	print str(spp4_lookup_small)
-
-
 def main():
+	# parse through command arguments, set parameters
 	load_cmd_args()
 
-	# outname = str(fn_delim.join(params.values()))
-	# print str(params['yrs'])
-	# print str(fn_delim.join(params['yrs']))
+	###########################################
+	# If species list is long, use MultNCSpp in filename
 	spp_fn = params['spp']
-	if len(params['spp'])>5:
+	if bsppallnc:
+		spp_fn = ['NCSpp']
+	elif len(params['spp'])>5:
 		spp_fn = ['MultNCSpp']
 
-	results_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+spp_fn+params['st']+['erd.csv'])
-	outspp_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+spp_fn+params['st']+['erd_spp.csv'])
-	outspplookup_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+spp_fn+params['st']+['erd_spp_lookup.csv'])
+	# Set up files for results
+	results_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+spp_fn+params['st']+['erd_checklists.csv']) #main checklist file
+	outspp_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+spp_fn+params['st']+['erd_species_counts.csv']) #list of species detected per checklist
+	outspplookup_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+spp_fn+params['st']+['erd_spp_lookup.csv']) #list of 
 	err_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+spp_fn+params['st']+['erd_err_log.csv'])
 
 	cntylist = []	
-
-	# print nl + 'results file:' + results_fn #testing
-	
 
 	out = open(results_fn,'w')
 	outspp = open(outspp_fn,'w')
@@ -308,77 +234,79 @@ def main():
 	err = open(err_fn,'w')
 
 	outspp.write(out_delim.join(['SAMPLING_EVENT_ID','SPP4','COUNT']))
-	outspplookup.write(out_delim.join(['SPP4','SCINAME','COMMNAME','SCINAME_SLUG','NC']))
+	outspplookup.write(out_delim.join(['SCINAME_SLUG','SPP4','COMMNAME','SCINAME','NC']))
 
-	# out = open(rootdir + '/results/' + fn_delim.join([rundt]+params['yrs']+params['spp']+params['st']+['ebd.csv']),'w')
 	count = 1
 	recsfound = 0
 	spp_cols = {} #array of columns to watch for non-zero values
 
+	###########################################
 	print nl + '-looping through source file'
 
 	with open(fn) as f:
-	# with open('E:\ebird_data\ebd_relMay-2015\ebd_relMay-2015.txt') as f:
-	# with open('ebird_sample.txt') as f:
 		for line in f:
-			#remove commas
-			#line = line.replace(out_delim,'') #remove final delimiter from data
-			#print line
-			r = line.split(ebird_delim) #split by ebird delimiter (tab)
+			r = line.split(ebird_delim) #split by erd delimiter (comma)
 			
-			if count ==1: #header line, skip
+			if count ==1: #header line
 
 				##############################################################################
-				#calculate species columns to watch
+				# add header row to checklist file
+				out.write(out_delim.join(r[:len(erd_fields)]))
+
+				##############################################################################
+				#calculate species columns to watch based on spp list passed and matches to column headers
 				if bsppall:
-					for x in xrange(len(erd_fields),len(r)):
-					# for n,s in enumerate(r):
+					for x in xrange(len(erd_fields),len(r)): #count to maintain column #s
 						spp_cols[x] = r[x] #capture all species
 				else:
 					for i in params['spp']:
 
-						#params['sppsci'].append(bird_codes.lookup_bird(i)['SCINAME']) #EBD
-						bird_info = bird_codes.lookup_spp4(i)
-						if bird_info:
+						bird_info = bird_codes.lookup_spp4(i) #get bird info list from bird_codes based on 4 digit code
+						if bird_info: #if a record returned...
 							params['sppsci'].append(bird_info['SCINAME_SLUG']) #translate 4 letter codes to ERD formatted scinames
 
-							for x in xrange(len(erd_fields),len(r)):
-							# for n,s in enumerate(r[len(erd_fields)]:):
+							for x in xrange(len(erd_fields),len(r)): #loop through species and find column numbers
 								if r[x] == bird_info['SCINAME_SLUG']:
 									spp_cols[x] = r[x] #create dict: key=column #, value = sci slug
-				# print str(spp_cols)
-				out.write(out_delim.join(r[:len(erd_fields)])) #add header row to checklist file
+									outspplookup.write(nl+out_delim.join(bird_info.values()))
 			else:
 				if len(line)>1: #skip blank lines
 
-					#booleans for evaluating three criteria
+					##############################################################################
+					# RESET booleans for evaluating three criteria
 					#byrs = byrsall
 					bspp = bsppall
 					bst = bstall
 					bcnty = bcntyall
 
-					#print str(r[date_col][:4]) + ' - ' + str(params['yrsall'])
+					##############################################################################
 					## EVALUATE YEARS
 					#if int(r[date_col][:4]) in params['yrsall']: byrs = True #EBD
 					#if r[year_col] in params['yrsall']: byrs = True #ERD
 
 					
+					##############################################################################
 					## EVALUATE SPP
-					# for i in spp_cols: #loop through spp columns, return true if value >0
-					# 	if int(r[i]) > 0: bspp = True
+					## if not all species or not all NC species, only collect rows where chosen species are found
+					if not(bsppall or bsppallnc):
+						# print '-checking for non-zero counts'
+						for i in spp_cols: #loop through spp columns, return true if value >0
+							temp_count = r[i]
+							try: #try to evaluate if number is greater than 0
+								if int(temp_count) > 0: bspp = True
+							except: #check to see if value is 'x'
+								if temp_count == 'x': bspp = True
 
+					##############################################################################
 					## EVALUATE STATE
-					if r[state_col] in params['stall']: 
-						bst = True
-						#######################################################################################
-						#temporary - log county list
-						if r[county_col] not in cntylist:cntylist.append(r[county_col])
-					#print str(byrs)
+					if r[state_col] in params['stall']: bst = True
 
+					##############################################################################
 					## EVALUATE COUNTY
 					if r[county_col] in params['cntyall']: bst = True
-					#print str(byrs)
 
+					##############################################################################
+					## populate output files
 					if bst and bspp and bcnty: #years not relevant, already defined
 						#print str(r[county_col])
 						out.write(nl+out_delim.join(r[:len(erd_fields)])) #ERD output of first columns to checklist table (not spp columns)
@@ -386,45 +314,30 @@ def main():
 						#populate separate table with spp records
 						# print str(r[len(erd_fields):])
 						for s in spp_cols.keys():
+							##############################################################################
+							# FOR TESTING
 							# print str(n) + ': ' + str(s)
-							print str(s)
-							print spp_cols[s]
-							print r[s]
-							print str(out_delim.join([r[0],spp_cols[s],r[s]]))
-							outspp.write(out_delim.join([r[0],spp_cols[s],r[s]]))
+							# print str(s) + ' : ' + spp_cols[s] + ' : ' + r[s]
+							# print str(out_delim.join([r[0],spp_cols[s],r[s]]))
+							##############################################################################
+							outspp.write(nl+out_delim.join([r[0],spp_cols[s],r[s]]))
 
 						recsfound +=1
-						#out.write(out_delim.join([find_bird4(r[sciname_col],params['spp'])] + r))
-
-						################################################################################
-						#this code checks to parse down to one record per checklist
-						# if r[id_col] in ebird_rec_ids: #this list has already been added or checked
-						# 	pass
-						# else:
-						# 	# list has not been evaluated
-						# 	ebird_rec_ids.append(r[id_col]) #add to evaluated list
-
-						# 	#check to see if lat/lon within distance of an NCBT Site
-						# 	with open(ncbt) as ts: #loop through trail sites
-						# 		for ncbt_line in ts:
-						# 			ncbt_line = ncbt_line.replace(out_delim,'')
-						# 			ncbt_r = ncbt_line.split(ebird_delim)
-						# 			la = float(ncbt_r[ncbt_lat_col])
-						# 			lo = float(ncbt_r[ncbt_lon_col])
-						# 			#if lat_dist+la >= r[lat_col] >= la-lat_dist and lon_dist+lo >= r[lon_col] >= lo-lon_dist
-						# 			if lat_dist+la >= r[lat_col] >= la-lat_dist and lon_dist+lo >= r[lon_col] >= lo-lon_dist:
-
-						# 				err.write(out_delim.join([str(la),str(lo),str(r[lat_col]),str(r[lon_col]),str(lat_dist+la >= r[lat_col] >= la-lat_dist),str(lon_dist+lo >= r[lon_col] >= lo-lon_dist)]+r)+nl)
-						# 				out.write(out_delim.join([r[id_col],r[lat_col],r[lon_col]] + ncbt_r)+nl)
-						# 				recsfound +=1
+					
+					##############################################################################
+					## Turn off all indicators
+					bspp = False
+					bst = False
+					bcnty = False
 
 			count +=1
 			count_prop = float(count) / 10000
-			#print str((count_prop)-int(count_prop)).split('.')
+
 			if int(str((count_prop)-int(count_prop)).split('.')[1][:10])==0: print '== ' + str(count) + ' records evaluated - ' + str(recsfound) +' found =='
-			if count>100000: break #for testing
-	print nl + 'counties found: ' + out_delim.join(cntylist)
-	err.write(out_delim.join(cntylist))
+			# if count>100: break #for testing
+
+	# print nl + 'counties found: ' + out_delim.join(cntylist)
+	# err.write(out_delim.join(cntylist))
 	print nl + 'search completed. ' + str(count) + ' lines evaluated, ' + str(recsfound) + ' matching records found.'
 
 if __name__ == '__main__':
