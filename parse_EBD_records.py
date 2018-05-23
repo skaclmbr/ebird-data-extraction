@@ -91,7 +91,7 @@ def load_cmd_args():
 	#TEMPORARY - use to simulate command line arguments
 	######INPUT DATA HERE#############################
 
-	temp_argv = 'C:\\data\\@nc_birding_trail\\ebird\\parse_ebird_records.py E:\\ebird_data\\ebd_relFeb-2018\\ebd_relFeb-2018.txt spp=HOSP'
+	temp_argv = 'C:\\data\\@nc_birding_trail\\ebird\\parse_ebird_records.py E:\\ebird_data\\ebd_relFeb-2018\\ebd_relFeb-2018.txt st=NC'
 	# temp_argv = 'C:\\data\\@projects\\eBird_obs\\20150825_parse_ebird_records.py J:\\ebird_data\\ebd_relMay-2015\\ebd_relMay-2015.txt spp=LOSH st=NC'
 	# temp_argv = 'C:\\data\\@projects\\eBird_obs\\20150825_parse_ebird_records.py E:\\ebird_data\\ebd_relMay-2015\\ebd_relMay-2015.txt spp=NOBO st=NC,SC,VA,GA,TN'
 	# temp_argv = 'C:\\data\\@projects\\eBird_obs\\20150825_parse_ebird_records.py E:\\ebird_data\\ebd_relMay-2015\\ebd_relMay-2015.txt spp=KEWA,SWWA,CERW,WOTH,YBCU st=NC'
@@ -289,25 +289,25 @@ def main():
 
 
 					#print str(r[date_col][:4]) + ' - ' + str(params['yrsall'])
-					print nl + 'yrs: ' + str(byrs) + ' : ' + str(byrsall) + ' : ' + str(r[date_col][:4])
+					# print nl + 'yrs: ' + str(byrs) + ' : ' + str(byrsall) + ' : ' + str(r[date_col][:4]) #TESTING
 					if str(r[date_col][:4]) in params['yrsall']:
 						byrs = True
-						print '++yrs: ' + str(byrs) + ' : ' + str(byrsall) + ' : ' + str(r[date_col][:4])
+						# print '++yrs: ' + str(byrs) + ' : ' + str(byrsall) + ' : ' + str(r[date_col][:4]) #TESTING
 					
-					print nl + 'spp: ' + str(bspp) + ' : ' + str(bsppall) +  ' : ' + str(r[sciname_col])
+					# print nl + 'spp: ' + str(bspp) + ' : ' + str(bsppall) +  ' : ' + str(r[sciname_col]) #TESTING
 					if r[sciname_col] in params['sppsci']:
 						bspp = True
-						print '++spp: ' + str(bspp) + ' : ' + str(bsppall) +  ' : ' + str(r[sciname_col])
+						# print '++spp: ' + str(bspp) + ' : ' + str(bsppall) +  ' : ' + str(r[sciname_col]) #TESTING
 					
-					print nl + 'state: ' + str(bst) + ' : ' + str(bstall) +  ' : ' + str(r[state_col])
+					# print nl + 'state: ' + str(bst) + ' : ' + str(bstall) +  ' : ' + str(r[state_col]) #TESTING
 					if r[state_col] in params['stall']:
 						bst = True
-						print '++state: ' + str(bst) + ' : ' + str(bstall) +  ' : ' + str(r[state_col])
+						# print '++state: ' + str(bst) + ' : ' + str(bstall) +  ' : ' + str(r[state_col]) #TESTING
 					
-					print nl + 'county: ' + str(bcnty) + ' : ' + str(bcntyall) +  ' : ' + str(r[state_col])
+					# print nl + 'county: ' + str(bcnty) + ' : ' + str(bcntyall) +  ' : ' + str(r[state_col]) #TESTING
 					if r[cnty_col] in params['cntyall']:
 						bcnty = True
-						print '++county: ' + str(bcnty) + ' : ' + str(bcntyall) +  ' : ' + str(r[cnty_col])
+						# print '++county: ' + str(bcnty) + ' : ' + str(bcntyall) +  ' : ' + str(r[cnty_col]) #TESTING
 					
 
 					#####################################################################################
@@ -332,7 +332,6 @@ def main():
 						if row_data['SAMPLING EVENT IDENTIFIER'] not in check_keys: #new checklist
 							out_check.write(nl+out_delim.join(check_data.values()))
 							check_keys.append(row_data['SAMPLING EVENT IDENTIFIER'])
-							# spp_keys = [] #clear out species list for the checklist - -UNEEDED?
 
 						if row_data['OBSERVER ID'] not in obs_keys:
 							out_obs.write(nl+out_delim.join(obs_data.values()))
@@ -345,72 +344,19 @@ def main():
 						# ALWAYS OUTPUT SPECIES ID
 						out_spplist.write(nl+out_delim.join(spplist_data.values()))
 						
-						# SHOULDN'T NEED THIS
-						# if row_data['SCIENTIFIC NAME'] not in spplist_keys:
-						# 	out_spplist.write(nl+out_delim.join(spplist_data.values()))
-						# 	spplist_keys.append(row_data['SCIENTIFIC NAME'])
-
 						## TESTING
-						err.write(nl+out_delim.join(['True',r[0],r[32],r[30] + ' ' + r[31],r[5],r[date_col][:4],r[15]]))
+						# err.write(nl+out_delim.join(['True',r[0],r[32],r[30] + ' ' + r[31],r[5],r[date_col][:4],r[15]]))
 					
 					else: #criteria not met
 						## TESTING
-						err.write(nl+out_delim.join(['False',r[0],r[32],r[30] + ' ' + r[31],r[5],r[date_col][:4],r[15]]))
+						# err.write(nl+out_delim.join(['False',r[0],r[32],r[30] + ' ' + r[31],r[5],r[date_col][:4],r[15]]))
 						pass
-
-					##
-					#####################################################################################
-
-					#####################################################################################
-					## COMMENTED OUT FOR TESTING
-					# 	# EXAMPLE
-					# 	# a = [-2,1,5,3,8,5,6]
-					# 	# b = [1,2,5]
-					# 	# c = [ a[i] for i in b]
-
-					# 	print 'check: ' + str([r[i] for i in check_cols.keys()])
-					# 	print 'obs: ' + str([r[i] for i in obs_cols.keys()])
-					# 	print 'loc: ' + str([r[i] for i in loc_cols.keys()])
-					# 	print 'spp: ' + str([r[i] for i in spp_cols.keys()])
-					# 	print 'spplist: ' + str([r[i] for i in spplist_cols.keys()])
-
-					# 	if r[checklist_col] != currChecklist: #save new checklist information
-					# 		currChecklist = r[checklist_col]
-					# 		# out_check.write(out_delim.join([find_bird4(r[sciname_col],params['spp'])] + r))
-					# 		out_check.write(out_delim.join([bird_codes.lookup_sciname(slugify(r[sciname_col]))] + r))
-					#	recsfound +=1
-					##
-					#####################################################################################
-
-
-
-						################################################################################
-						#this code checks to parse down to one record per checklist
-						# if r[id_col] in ebird_rec_ids: #this list has already been added or checked
-						# 	pass
-						# else:
-						# 	# list has not been evaluated
-						# 	ebird_rec_ids.append(r[id_col]) #add to evaluated list
-
-						# 	#check to see if lat/lon within distance of an NCBT Site
-						# 	with open(ncbt) as ts: #loop through trail sites
-						# 		for ncbt_line in ts:
-						# 			ncbt_line = ncbt_line.replace(out_delim,'')
-						# 			ncbt_r = ncbt_line.split(ebird_delim)
-						# 			la = float(ncbt_r[ncbt_lat_col])
-						# 			lo = float(ncbt_r[ncbt_lon_col])
-						# 			#if lat_dist+la >= r[lat_col] >= la-lat_dist and lon_dist+lo >= r[lon_col] >= lo-lon_dist
-						# 			if lat_dist+la >= r[lat_col] >= la-lat_dist and lon_dist+lo >= r[lon_col] >= lo-lon_dist:
-
-						# 				err.write(out_delim.join([str(la),str(lo),str(r[lat_col]),str(r[lon_col]),str(lat_dist+la >= r[lat_col] >= la-lat_dist),str(lon_dist+lo >= r[lon_col] >= lo-lon_dist)]+r)+nl)
-						# 				out.write(out_delim.join([r[id_col],r[lat_col],r[lon_col]] + ncbt_r)+nl)
-						# 				recsfound +=1
 
 			count +=1
 			count_prop = float(count) / 10000
-			#print str((count_prop)-int(count_prop)).split('.')
+			#print str((count_prop)-int(count_prop)).split('.') #TESTING
 			if int(str((count_prop)-int(count_prop)).split('.')[1][:10])==0: print '== ' + str(count) + ' records evaluated - ' + str(recsfound) +' found =='
-			if count>200: break #for testing
+			if count>100000: break #TESTING
 	print 'search completed. ' + str(count) + ' lines evaluated, ' + str(recsfound) + ' matching records found.'
 
 if __name__ == '__main__':
