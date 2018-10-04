@@ -15,6 +15,7 @@ import sys
 import datetime
 import bird_codes
 import time
+import math
 from collections import OrderedDict
 
 params = {'obs':[], 'yrs':[],'yrsall':[],'spp':[],'sppsci':[], 'st':[], 'stall':[], 'cnty':[], 'cntyall':[]}
@@ -49,7 +50,7 @@ params['yrs'] = []
 params['st'] = []
 params['cnty'] = []
 # ebirobs_fn = 'C:\\data\\@nc_birding_trail\\ebird\\results\\20180925_2017_NC_ebd_obs.csv' #observer file - blank out above criteria if want global data
-obs_fn = 'C:\\data\\@nc_birding_trail\\ebird\\results\\20181003_2017_NC_Dare_Tyrell_Washington_Hyde_Beaufort_Currituck_ebd_obs.csv' #observer file - blank out above criteria if want global data
+obs_fn = 'C:\\data\\@nc_birding_trail\\ebird\\results\\20181003_2017_NC_Dare_Tyrell_Washington_Hyde_Beaufort_Currituck_10_ebd_obs.csv' #observer file - blank out above criteria if want global data
 
 ############################################################
 ############################################################
@@ -110,10 +111,16 @@ def slugify(t):
 def get_obs_keys(l):
 	# use passed filename to retrieve observer keys, and return an array
 	return_array = []
+	print nl + '== retrieving obs keys ==' + nl + '- "' + l + '"'
+	obscount = 1
 	with open(l) as f:
 		for line in f:
 			r = line.split(',')
-			return_array.append(r[0])
+			obs = r[0].strip('\n')
+			if obs != 'OBSERVER ID':
+				return_array.append(obs)
+				obscount += 1
+	print nl + '- ' + str(obscount) + ' observer keys found -' + nl + str(return_array)
 	return return_array
 
 
@@ -211,7 +218,11 @@ def main():
 	##############################################################################
 	# LOAD Observers
 
-	observers = get_obs_keys(obs_fn)
+	# observers = get_obs_keys(obs_fn)
+
+	# observers = ['obsr345959', 'obsr653947', 'obsr324648', 'obsr414347', 'obsr221242', 'obsr34276', 'obsr443134', 'obsr378451', 'obsr592285', 'obsr277612', 'obsr163269', 'obsr412839', 'obsr195764', 'obsr681642', 'obsr194026', 'obsr548917', 'obsr138514', 'obsr291983', 'obsr41940', 'obsr431133', 'obsr677114', 'obsr894235', 'obsr542151', 'obsr86766', 'obsr527452', 'obsr298867', 'obsr494951', 'obsr626362', 'obsr616689', 'obsr48106', 'obsr773300', 'obsr566320', 'obsr639424', 'obsr213564', 'obsr659344', 'obsr356212', 'obsr550951', 'obsr549133', 'obsr279034', 'obsr530386', 'obsr543005', 'obsr106010', 'obsr723168', 'obsr348767', 'obsr616682', 'obsr153726', 'obsr448261', 'obsr972774', 'obsr16673', 'obsr753385', 'obsr1002310', 'obsr33814', 'obsr123898', 'obsr943873', 'obsr526743', 'obsr644562', 'obsr333452', 'obsr2417', 'obsr527245', 'obsr236430', 'obsr20382', 'obsr344616', 'obsr791599', 'obsr307210', 'obsr563626', 'obsr577929', 'obsr291728', 'obsr168148', 'obsr542845', 'obsr537376', 'obsr682333', 'obsr666843', 'obsr334150', 'obsr442493', 'obsr547676', 'obsr899553', 'obsr299743', 'obsr385469', 'obsr125223', 'obsr1072417', 'obsr681847', 'obsr357936', 'obsr630761', 'obsr676771', 'obsr223391', 'obsr774736', 'obsr291141', 'obsr303231', 'obsr435764', 'obsr246672', 'obsr969971', 'obsr5126', 'obsr969945', 'obsr536630', 'obsr967379', 'obsr744914', 'obsr548913', 'obsr813560', 'obsr140008', 'obsr553836', 'obsr344635', 'obsr509154', 'obsr306884', 'obsr325481', 'obsr22584', 'obsr567246', 'obsr669012', 'obsr287476', 'obsr295995', 'obsr560611', 'obsr254786', 'obsr399346', 'obsr862326', 'obsr525643', 'obsr388241', 'obsr675047', 'obsr201168', 'obsr655991', 'obsr973253', 'obsr112729', 'obsr527783', 'obsr304921', 'obsr466881', 'obsr971482', 'obsr395012', 'obsr162227', 'obsr678124', 'obsr799465']
+	observers = ['obsr345959', 'obsr653947', 'obsr324648', 'obsr414347', 'obsr221242', 'obsr34276', 'obsr443134']
+	# observers = ['obsr345959', 'obsr653947', 'obsr324648'] # testint with fewer observers
 
 	##############################################################################
 	# TEMP - build list of NC County Codes
@@ -230,24 +241,27 @@ def main():
 
 	##############################################################################
 	# setup output files
-	print folder
-	print [rundt]
-	print params['yrs']
-	print params['spp']
-	print params['st']
-	print params['cnty']
-	print ['ebdobs_checklists.csv']
+	# print nl
+	# print '- folder: ' + str(folder)
+	# print '- Run Date: ' + str([rundt])
+	# print '- years: ' + str(params['yrs'])
+	# print '- species: ' + str(params['spp'])
+	# print '- state: ' + str(params['st'])
+	# print '- county: ' + str(params['cnty'])
+	# print ['ebdobs_checklists.csv']
 	results_check_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+params['spp']+params['st']+params['cnty']+['ebdobs_checklists.csv'])
-	results_spp_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+params['spp']+params['st']+params['cnty']+['ebdobs_spp_count.csv'])
-	# results_obs_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+params['spp']+params['st']+params['cnty']+['ebd_obs.csv'])
-	results_spplist_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+params['spp']+params['st']+params['cnty']+['ebdobs_spplist.csv'])
 	err_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+params['spp']+params['st']+params['cnty']+['ncbt_err_log.csv'])
 
+	# DISABLE FOR NOW - bogs down computation when large # of species found
+	# results_spp_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+params['spp']+params['st']+params['cnty']+['ebdobs_spp_count.csv'])
+	# results_spplist_fn = folder + 'results\\' + fn_delim.join([rundt]+params['yrs']+params['spp']+params['st']+params['cnty']+['ebdobs_spplist.csv'])
+
 	out_check = open(results_check_fn,'w')
-	out_spp = open(results_spp_fn,'w')
-	# out_obs = open(results_obs_fn,'w')
-	out_spplist = open(results_spplist_fn,'w')
 	err = open(err_fn,'w')
+
+	# DISABLE FOR NOW - bogs down computation when large # of species found
+	# out_spplist = open(results_spplist_fn,'w')
+	# out_spp = open(results_spp_fn,'w')
 	
 	print nl + '-looping through source file'
 
@@ -276,6 +290,39 @@ def main():
 
 	###############################################################
 	# OPEN source file, loop through lines
+	# LOOP through observers 5 at a time? This might cut down on the bog...
+
+	obsperloop = 3
+	totobs = len(observers) #total number of observers
+	numloops = math.ceil(float(totobs)/float(obsperloop))
+	obsindlower = 0
+	loopcounter = 1
+	print nl + '== ' + str(totobs) + ' observers - ' + str(numloops) + ' loops required ==' + nl
+
+
+	while loopcounter<=numloops:
+		obsindupper = obsindlower + obsperloop
+		print nl + '===========================================' + nl + 'Loop ' + str(loopcounter) + nl
+		print nl + 'loop number ' + str(loopcounter)
+		print nl + 'obsindlower ' + str(obsindlower)
+		print nl + 'obsindupper ' + str(obsindupper)
+		
+		if loopcounter == numloops:
+			print nl + str(observers[obsindlower:])
+			loopobservers = observers[obsindlower:]
+		else: 
+			print nl + str(observers[obsindlower:obsindupper])
+			loopobservers = observers[obsindlower:obsindupper]
+
+
+
+
+
+		obsindlower = obsindupper
+		loopcounter += 1
+
+	print nl + '== END TEST LOOP =='
+
 	start = time.clock()
 	with open(fn) as f:
 		for line in f:
@@ -298,9 +345,10 @@ def main():
 				# err.write(out_delim.join(['RECORD ADDED','GLOBAL ID','CHECKLIST ID','OBSERVER','SCIENTIFIC NAME','YEAR','STATE'])) #TESTING
 				err.write(out_delim.join(all_fields)) #TESTING
 				out_check.write(out_delim.join(check_fields))
-				# out_obs.write(out_delim.join(obs_fields))
-				out_spp.write(out_delim.join(spp_fields))
-				out_spplist.write(out_delim.join(spplist_fields))
+				
+				# DISABLE FOR NOW - bogs down computation when large # of species found
+				# out_spp.write(out_delim.join(spp_fields))
+				# out_spplist.write(out_delim.join(spplist_fields))
 
 
 			###############################################################
@@ -352,15 +400,18 @@ def main():
 
 					err.write(nl + '== ' + str(r[id_col]) + ' Record Saved ==' + nl)
 
+					# assemble subset of full data row for each output file
 					for i,d in row_data.items():
 						if i in check_fields:
 							check_data[i] = d
-						# if i in obs_fields:
-						# 	obs_data[i] = d
-						if i in spp_fields:
-							spp_data[i] = d
-						if i in spplist_fields:
-							spplist_data[i] = d
+	
+						# DISABLE FOR NOW - bogs down computation when large # of species found
+						# if i in spp_fields:
+						# 	spp_data[i] = d
+	
+						# DISABLE FOR NOW - bogs down computation when large # of species found
+						# if i in spplist_fields:
+						# 	spplist_data[i] = d
 
 					#####################################################################################
 					## check to see if row contains duplicate data, output to relevant file if not
@@ -369,19 +420,21 @@ def main():
 						out_check.write(nl+out_delim.join(check_data.values()))
 						check_keys.append(row_data[check_key])
 
-					if row_data[spp_key] not in spp_keys:
-						out_spp.write(nl+out_delim.join(spp_data.values()))
-						spp_keys.append(row_data[spp_key])
+					# DISABLE FOR NOW - bogs down computation when large # of species found
+					# if row_data[spp_key] not in spp_keys:
+					# 	out_spp.write(nl+out_delim.join(spp_data.values()))
+					# 	spp_keys.append(row_data[spp_key])
 					
+					# DISABLE FOR NOW - bogs down computation when large # of species found
 					# ALWAYS OUTPUT SPECIES ID
-					out_spplist.write(nl+out_delim.join(spplist_data.values()))
+					# out_spplist.write(nl+out_delim.join(spplist_data.values()))
 					
 					## found records counter
 					recsfound += 1
 					
 			#Keeping count
 			count +=1
-			count_prop = count % 1000000
+			count_prop = count % 100000
 			count_prop2 = count % 1000000
 			if count_prop==0: 
 				nowt = time.clock()
@@ -398,10 +451,11 @@ def main():
 					# print nl + 'county: ' + str(bcnty) + ' : ' + str(bcntyall) +  ' : ' + str(r[state_col]) #TESTING
 				start = nowt
 								
-			# if count>1000000: break #TESTING
+			if count>50000: break #TESTING
 			# if count<10000000:
 			# 	# err.write(out_delim.join(r) + nl)
 			# 	break
+	close(fn)		
 
 	print 'search completed. ' + str(count) + ' lines evaluated, ' + str(recsfound) + ' matching records found.' + nl
 	print '== ' + 'output file: ' + str(fn_delim.join([rundt]+params['yrs']+params['spp']+params['st']+params['cnty'])) + ' ==' + nl
