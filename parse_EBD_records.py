@@ -47,12 +47,15 @@ checklist_col = 30 #SAMPLING EVENT IDENTIFIER
 date_col = 27 #DATE column
 
 ########################################################################################################
+########################################################################################################
 # QUERY PARAMETERS
 #==============================
 # SPP EXAMPLES
+# params['spp'] = [] # no species limits
 # params['spp'] = ['NOCA'] #only records with Northern Cardinal
 # params['spp'] = ['NOCA','BLJA'] #records with Northern Cardinal OR Blue Jay
 # YRS EXAMPLES
+# params['yrs'] = [] # no year limits
 # params['Yrs'] = ['2017'] #2017 only
 # params['yrs'] = ['2013-2017'] #any year between and including 2013 and 2017
 # params['yrs'] = ['2013','2017'] #records from 2013 OR 2017
@@ -65,29 +68,22 @@ date_col = 27 #DATE column
 # MON EXAMPLES
 # params['mon'] = ['10'] #Only records from October
 # params['mon'] = ['10', '11'] #Records from October OR November
-######################################################
+#
 #PARAMETERS
-# params['spp'] = [] # no species limits
-# params['yrs'] = [] # no year limits
+#==============================
 params['st'] = ['NC'] #no state limits
-params['cnty'] = [] #no county limits
+params['cnty'] = ['Wake'] #no county limits
 params['mon'] = [] #no month limits
 params['spp'] = []
-params['yrs'] = ['2015','2016','2017']
-## Forsyth presentation
-# params['st'] = ['NC'] #no state limits
-# params['cnty'] = ['Forsyth','Guilford','Rockingham','Stokes','Surry','Yadkin','Iredell','Davie','Davidson','Rowan','Randolph'] #no county limits
-# params['mon'] = [] #no month limits
-# params['spp'] = ['SWWA','KEWA','CERW','AMRE','BAEA','ACFL','WOTH','MIKI','STKI','HOWA','YBCU','NOPA','PROW']
-# params['yrs'] = ['2013-2017']
-##
-# params['st'] = ['NC']
-# params['mon'] = ['10'] #month
-# params['cnty'] = ['Wake']
-# params['cnty'] = ['Dare','Tyrell','Washington','Hyde','Beaufort','Currituck'] # MULTI COUNTY EXAMPLE
+params['yrs'] = ['2013-2017']
+#
+########################################################################################################
+########################################################################################################
+
 # to be used to determine rough distance from point using simple trig
 lat_dist = 0.003
 lon_dist = 0.004
+
 # These fields are the keys for the relevant files
 check_key = 'SAMPLING EVENT IDENTIFIER'
 spp_key = 'SCIENTIFIC NAME'
@@ -140,12 +136,14 @@ def load_cmd_args():
 	global fn #might use this later to put results in a subfolder where the this file resides
 
 	##########################################################################
+	##########################################################################
 	# eBird Data File Location
 	fn = 'D:\\ebird_data\\ebd_relAug-2018\\ebd_relAug-2018.txt' #FULL DATA FILE
 	# fn = 'C:\\data\\@nc_birding_trail\\ebird\\sample_file\\ebd_sampling_relAug-2018.txt' #SAMPLE FILE
 	# fn = 'C:\\data\\@nc_birding_trail\\ebird\\sample_file\\ebd_US-AL-101_201801_201801_relMay-2018.txt' #sample file
 	# fn = 'D:\\ebird_data\\ebd_relMay-2018\\ebd_relMay-2018.txt'
-	#################################
+	##########################################################################
+	##########################################################################
 
 	#populate scientific names in parameters
 	print nl + '-populating species'
@@ -170,6 +168,7 @@ def load_cmd_args():
 			params['yrsall'].append(str(y))
 	else: #one year or comma separated list
 		for y in yr_in:
+			params['yrsall'].append(str(y))
 	print str(params['yrsall'])
 
 	#populate all states in parameters
@@ -177,6 +176,7 @@ def load_cmd_args():
 	if len(params['st'])==0:
 		params['stall'].append('all')
 		bstall = True
+	else:
 		for i in params['st']:
 			print 'st: ' + str(i)
 			if i in us_state_abbr:
@@ -184,12 +184,13 @@ def load_cmd_args():
 			else:
 				params['stall'].append(i)
 	print str(params['stall'])
-	print nl + '-populating county'
 	
 	#populate counties in parameters
+	print nl + '-populating county'
 	if len(params['cnty'])==0:
 		params['cntyall'].append('all')
 		bcntyall = True
+	else:
 		for i in params['cnty']:
 			params['cntyall'].append(i.replace('_',' '))
 	print str(params['cntyall'])
@@ -199,6 +200,7 @@ def load_cmd_args():
 	if len(params['mon'])==0:
 		params['monall'].append('all')
 		bmonall = True
+	else:	
 		for i in params['mon']:
 			params['monall'].append(i)
 	print str(params['monall'])
@@ -206,19 +208,27 @@ def load_cmd_args():
 	if bstall and byrsall and bsppall and bcntyall and bmonall:
 		print '----------------------------------'+nl+'You must specify at least one criteria to produce results.'+nl+'----------------------------------'
 		error_text()
+
 def main():
 	load_cmd_args()
 
 	# setup output files
+
+	###############################################################
+	###############################################################
+	# folder for output files
 	source_folder = 'D:\\ebird_data\\ebd_relMay-2018\\'
 
+	###############################################################
+	###############################################################
+	
 	#filename includes all parameters and run date
 	fn_prefix = fn_delim.join([rundt]+params['yrs']+params['spp']+params['st']+params['cnty']+params['mon'])
-	results_check_fn = folder + 'results\\' + fn_delim.join(fn_prefix+['ebd_checklists.csv'])
-	results_spp_fn = folder + 'results\\' + fn_delim.join(fn_prefix+['ebd_spp_count.csv'])
-	results_obs_fn = folder + 'results\\' + fn_delim.join(fn_prefix+['ebd_obs.csv'])
-	results_spplist_fn = folder + 'results\\' + fn_delim.join(fn_prefix+['ebd_spplist.csv'])
-	err_fn = folder + 'results\\' + fn_delim.join(fn_prefix+['err_log.csv'])
+	results_check_fn = folder + 'results\\' + fn_delim.join([fn_prefix]+['ebd_checklists.csv'])
+	results_spp_fn = folder + 'results\\' + fn_delim.join([fn_prefix]+['ebd_spp_count.csv'])
+	results_obs_fn = folder + 'results\\' + fn_delim.join([fn_prefix]+['ebd_obs.csv'])
+	results_spplist_fn = folder + 'results\\' + fn_delim.join([fn_prefix]+['ebd_spplist.csv'])
+	err_fn = folder + 'results\\' + fn_delim.join([fn_prefix]+['err_log.csv'])
 	out_check = open(results_check_fn,'w')
 	out_spp = open(results_spp_fn,'w')
 	out_obs = open(results_obs_fn,'w')
