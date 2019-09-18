@@ -72,10 +72,10 @@ date_col = 27 #DATE column
 #PARAMETERS
 #==============================
 params['st'] = ['NC'] #no state limits
-params['cnty'] = ['Wake'] #no county limits
+params['cnty'] = [] #no county limits
 params['mon'] = [] #no month limits
 params['spp'] = []
-params['yrs'] = ['2013-2017']
+params['yrs'] = ['2017']
 #
 ########################################################################################################
 ########################################################################################################
